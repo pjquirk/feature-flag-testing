@@ -1,0 +1,16 @@
+name: 'Feature Flag Issue Scraper'
+description: 'Looks for feature flag rollout issues and builds a status page'
+inputs:
+  action-token:
+    description: 'Token for the repo. Can be passed in using {{ secrets.GITHUB_TOKEN }}'
+    required: true
+  path-to-status-page:  # id of input
+    description: 'Repository path to the file to generate'
+    required: false
+    default: 'docs/features.md'
+#outputs:
+#  time: # id of output
+#    description: 'The time we greeted you'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

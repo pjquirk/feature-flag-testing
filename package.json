@@ -1,0 +1,27 @@
+{
+  "name": "feature-flag-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pjquirk/feature-flag-testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pjquirk/feature-flag-testing/issues"
+  },
+  "homepage": "https://github.com/pjquirk/feature-flag-testing#readme",
+  "dependencies": {
+    "@actions/core": "^1.1.3",
+    "@actions/github": "^1.1.0",
+    "@octokit/graphql": "^4.2.0",
+    "@types/node": "^12.7.11",
+    "typescript": "^3.6.3"
+  }
+}
