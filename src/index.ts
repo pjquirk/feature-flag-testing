@@ -9,7 +9,7 @@ async function run() {
     
     console.log(`Reading issue ${context.issue.number} from ${context.issue.owner}/${context.issue.repo}`);
     const issue = await github.issues.get({
-        number: context.issue.number,
+        issue_number: context.issue.number,
         owner: context.issue.owner,
         repo: context.issue.repo
     });
