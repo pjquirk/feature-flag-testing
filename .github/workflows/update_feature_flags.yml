@@ -8,5 +8,5 @@ jobs:
     steps:
     - uses: pjquirk/feature-flag-testing@master
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        action-token: ${{ secrets.GITHUB_TOKEN }}
         # path-to-status-page: "docs/featureflags.md"
