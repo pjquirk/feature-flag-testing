@@ -15,7 +15,7 @@ async function run() {
     const github = new github_1.GitHub(actionToken);
     console.log(`Reading issue ${github_1.context.issue.number} from ${github_1.context.issue.owner}/${github_1.context.issue.repo}`);
     const issue = await github.issues.get({
-        number: github_1.context.issue.number,
+        issue_number: github_1.context.issue.number,
         owner: github_1.context.issue.owner,
         repo: github_1.context.issue.repo
     });
@@ -26,7 +26,7 @@ async function run() {
     }
     // Extract the FF name from the title. The title is expected to be:
     //   "Roll out FEATURE_NAME"
-    const match = issue.data.title.match(/^Roll out (.*)/);
+    const match = issue.data.title.match(/^Roll out (.*)$/i);
     if (!match || match.length == 0) {
         console.log(`No feature name was found in the title, ignoring.`);
         return;
