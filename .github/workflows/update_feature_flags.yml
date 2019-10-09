@@ -1,7 +1,7 @@
 name: Update Feature Flags
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, edited, labeled]
 jobs:
   label:
     runs-on: ubuntu-latest
