@@ -22,20 +22,25 @@ async function run() {
 
     // Extract the FF name from the title. The title is expected to be:
     //   "Roll out FEATURE_NAME"
-    const match = issue.data.title.match(/^Roll out (.*)$/i);
-    if (!match || match.length == 0) {
+    const matches = issue.data.title.match(/^Roll out (.*)$/i);
+    if (!matches || matches.length == 0) {
         console.log(`No feature name was found in the title, ignoring.`);
         return;
     }
-    const featureName = match[0];
-    console.log(`Found issue for feature ${featureName}`)
+    const featureName = matches[0];
+    console.log(`Found issue for feature ${featureName}`);
 
     // Extract the FF status from the body.  The body is expected to be (in Markdown):
     //
     // - [X] Stage Name 0
     // - [ ] Stage Name 1
     // - [ ] Stage Name 2
-    
+    const stageMatches = issue.data.body.match(/^- \[(x)?\] (.*)$/i);
+    if (!stageMatches || stageMatches.length == 0) {
+        console.log(`No stages were found in the title, ignoring.`);
+        return;
+    }
+    console.log(`Found ${stageMatches.length}`);
 
     const pathToStatusPage = Core.getInput('path-to-status-page');
     console.log(`Writing status to: ${pathToStatusPage}`);
