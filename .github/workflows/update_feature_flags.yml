@@ -1,0 +1,12 @@
+name: Update Feature Flags
+on:
+  issues:
+    types: [opened, edited]
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: pjquirk/feature-flag-testing@master
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        # path-to-status-page: "docs/featureflags.md"
