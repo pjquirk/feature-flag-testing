@@ -22,7 +22,7 @@ async function run() {
 
     // Extract the FF name from the title. The title is expected to be:
     //   "Roll out FEATURE_NAME"
-    const match = issue.data.title.match(/^Roll out (.*)/);
+    const match = issue.data.title.match(/^Roll out (.*)$/i);
     if (!match || match.length == 0) {
         console.log(`No feature name was found in the title, ignoring.`);
         return;
