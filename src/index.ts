@@ -57,20 +57,41 @@ async function run() {
     console.log(`Found ${stages.length} stages`);
 
     const pathToStatusPage = Core.getInput('path-to-status-page');
-    console.log(`Retrieving contents of: ${pathToStatusPage}`);
-    const response = await github.repos.getContents({
-        owner: context.issue.owner,
-        repo: context.issue.repo,
-        path: pathToStatusPage
-    });
-    console.log(`Request status: ${response.status}`);   
+    let response;
+    let fileExists: boolean;
+    let fileContents: string;
+    try {
+        console.log(`Retrieving contents of: ${pathToStatusPage}`);
+        response = await github.repos.getContents({
+            owner: context.issue.owner,
+            repo: context.issue.repo,
+            path: pathToStatusPage
+        });
+        fileExists = true;
+        // Bit of a hack, the type definitions don't expose 'content'
+        const data: any = response.data;
+        if (!data.content) {
+            Core.setFailed(`${pathToStatusPage} is not a file, stopping.`);
+            return
+        }
+        fileContents = data.content && Buffer.from(data.content).toString();
+        console.log(`${pathToStatusPage} found.`);
+    }
+    catch (e) {
+        if (!response || response.status !== 404) {
+            console.log(`Failed to retrieve the status page contents: ${e.message}`);
+            Core.setFailed(e.message);
+            return;
+        }
+        // we need to create the file
+        fileExists = false;
+        fileContents = "";
+        console.log(`${pathToStatusPage} does not exist, will create it.`);
+    }
 }
 
 run()
     .then(
         (response) => { console.log(`Finished running: ${response}`) },
-        (error) => { 
-            console.log(`#ERROR# ${error}`);
-            Core.setFailed(error.message);
-        }
+        (error) => { Core.setFailed(error.message) }
     );
