@@ -74,7 +74,7 @@ async function run() {
         console.log(`${pathToStatusPage} found.`);
     }
     catch (e) {
-        if (!e || !e.message || e.message === "Not Found") {
+        if (!e || !e.message || e.message !== "Not Found") {
             console.log(`Failed to retrieve the status page contents: ${e.message}`);
             Core.setFailed(e.message);
             return;
