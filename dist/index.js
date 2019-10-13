@@ -38,7 +38,7 @@ async function run() {
     // - [X] Stage Name 0
     // - [ ] Stage Name 1
     // - [ ] Stage Name 2
-    const regexp = RegExp('^- \[([\sx])\] (.*)$', 'mgi');
+    const regexp = RegExp(/^- \[([\sx])\] (.*)$/, 'mgi');
     const stages = [];
     let match;
     while ((match = regexp.exec(issue.data.body)) !== null) {
