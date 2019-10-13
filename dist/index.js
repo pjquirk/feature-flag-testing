@@ -114,7 +114,7 @@ async function createStatus(params) {
         repo: params.issue.repo,
         path: params.pathToStatusPage,
         message: `Updating feature flag status page for '${params.featureName}'`,
-        content: atob(markup)
+        content: Buffer.from(markup).toString('base64')
     });
     console.log("Created status page");
 }
