@@ -3,9 +3,25 @@ import { context, GitHub } from "@actions/github";
 
 const FeatureFlagLabelName = "Feature Flag Rollout";
 
+type GitHubIssue = {
+    repo: string;
+    owner: string;
+
+}
+
 interface Stage {
     name: string;
     enabled: boolean;
+}
+
+interface StatusInfoParams {
+    fileExists: boolean;
+    fileContents: string;
+    pathToStatusPage: string;
+    featureName: string;
+    stages: Stage[];
+    github: GitHub;
+    issue: GitHubIssue;
 }
 
 async function run() {
@@ -58,8 +74,15 @@ async function run() {
 
     const pathToStatusPage = Core.getInput('path-to-status-page');
     let response;
-    let fileExists: boolean;
-    let fileContents: string;
+    let params: StatusInfoParams = {
+        featureName: featureName,
+        fileContents: "",
+        fileExists: false,
+        github: github,
+        pathToStatusPage: pathToStatusPage,
+        stages: stages,
+        issue: context.issue
+    };
     try {
         console.log(`Retrieving contents of: ${pathToStatusPage}`);
         response = await github.repos.getContents({
@@ -67,14 +90,14 @@ async function run() {
             repo: context.issue.repo,
             path: pathToStatusPage
         });
-        fileExists = true;
+        params.fileExists = true;
         // Bit of a hack, the type definitions don't expose 'content'
         const data: any = response.data;
         if (!data.content) {
             Core.setFailed(`${pathToStatusPage} is not a file, stopping.`);
             return
         }
-        fileContents = data.content && Buffer.from(data.content).toString();
+        params.fileContents = data.content && Buffer.from(data.content).toString();
         console.log(`${pathToStatusPage} found.`);
     }
     catch (e) {
@@ -84,10 +107,45 @@ async function run() {
             return;
         }
         // we need to create the file
-        fileExists = false;
-        fileContents = "";
+        params.fileExists = false;
+        params.fileContents = "";
         console.log(`${pathToStatusPage} does not exist, will create it.`);
     }
+
+    if (params.fileExists) {
+        await updateStatus(params);
+    }
+    else {
+        await createStatus(params);
+    }
+}
+
+async function updateStatus(params: StatusInfoParams): Promise<void> {
+
+}
+
+async function createStatus(params: StatusInfoParams): Promise<void> {
+    // Table should look like:
+    // |  | stage 0 | stage 1 | stage 2 |
+    // | --- | --- | --- | --- |
+    // | feature name | :white_check_mark: |  |  | 
+    const markup = `| Feature Flag | ${params.stages.map(s => s.name).join(" | ")} |
+        | --- | ${params.stages.map(s => "---").join(" | ")} |
+        | ${params.featureName} | ${params.stages.map(getStageStatus).join(" | ")} | `;
+
+    // Write the markup to the repo
+    const response = await params.github.repos.createFile({
+        owner: params.issue.owner,
+        repo: params.issue.repo,
+        path: params.pathToStatusPage,
+        message: `Updating feature flag status page for '${params.featureName}'`,
+        content: atob(markup)
+    });
+    console.log("Created status page");
+}
+
+function getStageStatus(stage: Stage): string {
+    return stage.enabled ? ":white_check_mark:" : " ";
 }
 
 run()
