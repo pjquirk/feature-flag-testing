@@ -38,14 +38,28 @@ async function run() {
     // - [X] Stage Name 0
     // - [ ] Stage Name 1
     // - [ ] Stage Name 2
-    const stageMatches = issue.data.body.match(/^- \[(x)?\] (.*)$/mi);
-    if (!stageMatches || stageMatches.length == 0) {
+    const regexp = RegExp('^- \[([\sx])\] (.*)$', 'mgi');
+    const stages = [];
+    let match;
+    while ((match = regexp.exec(issue.data.body)) !== null) {
+        stages.push({
+            name: match[2],
+            enabled: match[1].toLowerCase() === 'x'
+        });
+    }
+    if (!stages || stages.length == 0) {
         console.log(`No stages were found in the body, ignoring.`);
         return;
     }
-    console.log(`Found ${stageMatches.length} stages`);
+    console.log(`Found ${stages.length} stages`);
     const pathToStatusPage = Core.getInput('path-to-status-page');
-    console.log(`Writing status to: ${pathToStatusPage}`);
+    console.log(`Retrieving contents of: ${pathToStatusPage}`);
+    const response = await github.repos.getContents({
+        owner: github_1.context.issue.owner,
+        repo: github_1.context.issue.repo,
+        path: pathToStatusPage
+    });
+    console.log(`Request status: ${response.status}`);
 }
 run()
     .then((response) => { console.log(`Finished running: ${response}`); }, (error) => {

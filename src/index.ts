@@ -3,6 +3,11 @@ import { context, GitHub } from "@actions/github";
 
 const FeatureFlagLabelName = "Feature Flag Rollout";
 
+interface Stage {
+    name: string;
+    enabled: boolean;
+}
+
 async function run() {
     const actionToken = Core.getInput('action-token');
     const github = new GitHub(actionToken);
@@ -35,16 +40,30 @@ async function run() {
     // - [X] Stage Name 0
     // - [ ] Stage Name 1
     // - [ ] Stage Name 2
-    const stageMatches = issue.data.body.match(/^- \[(x)?\] (.*)$/mi);
-    if (!stageMatches || stageMatches.length == 0) {
+    const regexp = RegExp('^- \[([\sx])\] (.*)$','mgi');
+    const stages: Stage[] = [];
+    let match : RegExpExecArray | null;
+
+    while ((match = regexp.exec(issue.data.body)) !== null) {
+        stages.push({
+            name: match[2],
+            enabled: match[1].toLowerCase() === 'x'
+        });
+    }
+    if (!stages || stages.length == 0) {
         console.log(`No stages were found in the body, ignoring.`);
         return;
     }
-    console.log(`Found ${stageMatches.length} stages`);
+    console.log(`Found ${stages.length} stages`);
 
     const pathToStatusPage = Core.getInput('path-to-status-page');
-    console.log(`Writing status to: ${pathToStatusPage}`);
-    
+    console.log(`Retrieving contents of: ${pathToStatusPage}`);
+    const response = await github.repos.getContents({
+        owner: context.issue.owner,
+        repo: context.issue.repo,
+        path: pathToStatusPage
+    });
+    console.log(`Request status: ${response.status}`);   
 }
 
 run()
