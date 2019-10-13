@@ -31,19 +31,19 @@ async function run() {
         console.log(`No feature name was found in the title, ignoring.`);
         return;
     }
-    const featureName = matches[0];
+    const featureName = matches[1];
     console.log(`Found issue for feature ${featureName}`);
     // Extract the FF status from the body.  The body is expected to be (in Markdown):
     //
     // - [X] Stage Name 0
     // - [ ] Stage Name 1
     // - [ ] Stage Name 2
-    const stageMatches = issue.data.body.match(/^- \[(x)?\] (.*)$/i);
+    const stageMatches = issue.data.body.match(/^- \[(x)?\] (.*)$/mi);
     if (!stageMatches || stageMatches.length == 0) {
-        console.log(`No stages were found in the title, ignoring.`);
+        console.log(`No stages were found in the body, ignoring.`);
         return;
     }
-    console.log(`Found ${stageMatches.length}`);
+    console.log(`Found ${stageMatches.length} stages`);
     const pathToStatusPage = Core.getInput('path-to-status-page');
     console.log(`Writing status to: ${pathToStatusPage}`);
 }
