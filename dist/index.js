@@ -135,6 +135,7 @@ function updateStatus(params) {
     headers.push(...missingStageNames);
     // Update the headers
     lines[headerIndex + 1] = `| ${headers.join(" | ")} |`;
+    lines[headerIndex + 2] = `| ${headers.map(h => "---").join(" | ")} |`;
     // Find the row for our feature
     const updatedLine = `| ${headers.map(h => getCellContentsForHeader(h, params)).join(" | ")} |`;
     console.log("Updated line: " + updatedLine);
