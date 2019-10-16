@@ -11,6 +11,7 @@ const Core = __importStar(require("@actions/core"));
 const github_1 = require("@actions/github");
 const FeatureFlagLabelName = "Feature Flag Rollout";
 const StatusHeader = "# Feature Flags Status";
+const FeatureFlagTitleCell = "Feature Flag";
 async function run() {
     const actionToken = Core.getInput('action-token');
     const github = new github_1.GitHub(actionToken);
@@ -102,9 +103,6 @@ async function run() {
 async function updateStatus(params) {
     // Find the header, our table is right below it
     const lines = params.fileContents.split('\n');
-    for (const line of lines) {
-        console.log("Line: " + line);
-    }
     const headerIndex = lines.indexOf(StatusHeader);
     if (headerIndex < 0) {
         Core.setFailed("Could not find the table header");
@@ -124,15 +122,27 @@ async function updateStatus(params) {
         .filter(name => headersLower.includes(name.toLowerCase()));
     headers.push(...missingStageNames);
     // Update the headers
-    lines[headerIndex + 1] = "| " + headers.join(" | ") + " |";
+    lines[headerIndex + 1] = `| ${headers.join(" | ")} |`;
     // Find the row for our feature
+    const updatedLine = `| ${headers.map(h => getCellContentsForHeader(h, params)).join(" | ")} |`;
     const featureRowIndex = lines.findIndex(l => l.indexOf(params.featureName));
     if (featureRowIndex >= 0) {
         // modify the row
+        console.log(`Found ${params.featureName} in table`);
+        lines[featureRowIndex] = updatedLine;
     }
     else {
         // just add a row
+        console.log(`Did not find ${params.featureName} in table, adding a row`);
+        lines.push(updatedLine);
     }
+}
+function getCellContentsForHeader(header, params) {
+    const stage = params.stages.find(s => s.name === header.toLowerCase());
+    if (!stage) {
+        return "";
+    }
+    return getStageStatus(stage);
 }
 async function createStatus(params) {
     // Table should look like:
@@ -140,7 +150,7 @@ async function createStatus(params) {
     // | --- | --- | --- | --- |
     // | feature name | :white_check_mark: |  |  | 
     const markup = `${StatusHeader}
-| Feature Flag | ${params.stages.map(s => s.name).join(" | ")} |
+| ${FeatureFlagTitleCell} | ${params.stages.map(s => s.name).join(" | ")} |
 | --- | ${params.stages.map(s => "---").join(" | ")} |
 | ${params.featureName} | ${params.stages.map(getStageStatus).join(" | ")} | `;
     // Write the markup to the repo
