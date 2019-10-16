@@ -143,7 +143,7 @@ function updateStatus(params) {
         console.log(`Did not find ${params.featureName} in table, adding a row`);
         lines.push(updatedLine);
     }
-    return updatedContents;
+    return lines.join('\n');
 }
 function getCellContentsForHeader(header, params) {
     const stage = params.stages.find(s => s.name === header.toLowerCase());
@@ -152,7 +152,7 @@ function getCellContentsForHeader(header, params) {
     }
     return getStageStatus(stage);
 }
-async function createStatus(params) {
+function createStatus(params) {
     // Table should look like:
     // |  | stage 0 | stage 1 | stage 2 |
     // | --- | --- | --- | --- |

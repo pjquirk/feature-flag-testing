@@ -171,7 +171,7 @@ function updateStatus(params: StatusInfoParams): string | undefined {
         lines.push(updatedLine);
     }
 
-    return updatedContents;
+    return lines.join('\n');
 }
 
 function getCellContentsForHeader(header: string, params: StatusInfoParams): string {
@@ -182,7 +182,7 @@ function getCellContentsForHeader(header: string, params: StatusInfoParams): str
     return getStageStatus(stage);
 }
 
-async function createStatus(params: StatusInfoParams): string {
+function createStatus(params: StatusInfoParams): string {
     // Table should look like:
     // |  | stage 0 | stage 1 | stage 2 |
     // | --- | --- | --- | --- |
