@@ -2,11 +2,11 @@ import * as Core from "@actions/core";
 import { context, GitHub } from "@actions/github";
 
 const FeatureFlagLabelName = "Feature Flag Rollout";
+const StatusHeader = "# Feature Flags Status";
 
 type GitHubIssue = {
     repo: string;
     owner: string;
-
 }
 
 interface Stage {
@@ -121,7 +121,34 @@ async function run() {
 }
 
 async function updateStatus(params: StatusInfoParams): Promise<void> {
+    // Find the header, our table is right below it
+    const lines = params.fileContents.split('\n');
+    const headerIndex = lines.indexOf(StatusHeader);
+    if (headerIndex < 0) {
+        Core.setFailed("Could not find the table header");
+        return;
+    }
+    // Needs to be at least a header row and divders
+    if (headerIndex <= lines.length - 3) {
+        Core.setFailed("Not enough lines for a status table");
+        return;
+    }
 
+    // Make sure all of our stages exist
+    const headerRow = lines[headerIndex+1];
+    const headers = headerRow.split("|").map(h => h.trim());
+    
+    // TODO: Store indices of each stage name
+    // TODO: insert headers in the right places
+
+    // Find the row for our feature
+    const featureRowIndex = lines.findIndex(l => l.indexOf(params.featureName));
+    if (featureRowIndex >= 0) {
+        // modify the row
+    }
+    else {
+        // just add a row
+    }
 }
 
 async function createStatus(params: StatusInfoParams): Promise<void> {
@@ -129,12 +156,13 @@ async function createStatus(params: StatusInfoParams): Promise<void> {
     // |  | stage 0 | stage 1 | stage 2 |
     // | --- | --- | --- | --- |
     // | feature name | :white_check_mark: |  |  | 
-    const markup = `| Feature Flag | ${params.stages.map(s => s.name).join(" | ")} |
-        | --- | ${params.stages.map(s => "---").join(" | ")} |
-        | ${params.featureName} | ${params.stages.map(getStageStatus).join(" | ")} | `;
+    const markup = `${StatusHeader}
+| Feature Flag | ${params.stages.map(s => s.name).join(" | ")} |
+| --- | ${params.stages.map(s => "---").join(" | ")} |
+| ${params.featureName} | ${params.stages.map(getStageStatus).join(" | ")} | `;
 
     // Write the markup to the repo
-    const response = await params.github.repos.createFile({
+    const response = await params.github.repos.createOrUpdateFile({
         owner: params.issue.owner,
         repo: params.issue.repo,
         path: params.pathToStatusPage,
