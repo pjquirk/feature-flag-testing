@@ -181,11 +181,14 @@ function updateStatus(params: StatusInfoParams): string | undefined {
 }
 
 function getCellContentsForHeader(header: string, params: StatusInfoParams): string {
-    const stage = params.stages.find(s => s.name.toLowerCase() === header.toLowerCase());
-    if (!stage) {
-        return "";
+    if (header == FeatureFlagTitleCell) {
+        return params.featureName;
     }
-    return getStageStatus(stage);
+    const stage = params.stages.find(s => s.name.toLowerCase() === header.toLowerCase());
+    if (stage) {
+        return getStageStatus(stage);
+    }
+    return "";
 }
 
 function createStatus(params: StatusInfoParams): string {
