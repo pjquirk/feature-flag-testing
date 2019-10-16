@@ -114,7 +114,11 @@ async function run() {
 }
 function updateStatus(params) {
     // Find the header, our table is right below it
-    const lines = params.fileContents.split('\n');
+    let lines = params.fileContents.split('\n');
+    // Trim the last empty line, if it's there
+    if (lines[lines.length - 1].length === 0) {
+        lines = lines.slice(0, lines.length - 1);
+    }
     const headerIndex = lines.indexOf(StatusHeader);
     if (headerIndex < 0) {
         Core.setFailed("Could not find the table header");
