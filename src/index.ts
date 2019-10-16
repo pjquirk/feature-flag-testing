@@ -83,6 +83,7 @@ async function run() {
         stages: stages,
         issue: context.issue
     };
+    let fileSha: string | undefined;
     try {
         console.log(`Retrieving contents of: ${pathToStatusPage}`);
         const getContentsResponse = await github.repos.getContents({
@@ -98,6 +99,7 @@ async function run() {
             return
         }
         params.fileContents = data.content && Buffer.from(data.content, 'base64').toString('ascii');
+        fileSha = data.sha;
         console.log(`${pathToStatusPage} found.`);
     }
     catch (e) {
@@ -128,6 +130,7 @@ async function run() {
         repo: params.issue.repo,
         path: params.pathToStatusPage,
         message: `Updating feature flag status page for '${params.featureName}'`,
+        sha: fileSha,
         content: Buffer.from(newContents).toString('base64')
     });
 }
