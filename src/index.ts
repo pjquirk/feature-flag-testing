@@ -123,6 +123,8 @@ async function run() {
 async function updateStatus(params: StatusInfoParams): Promise<void> {
     // Find the header, our table is right below it
     const lines = params.fileContents.split('\n');
+    console.log(`Found ${lines.length} lines`);
+
     const headerIndex = lines.indexOf(StatusHeader);
     if (headerIndex < 0) {
         Core.setFailed("Could not find the table header");
