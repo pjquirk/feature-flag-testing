@@ -78,7 +78,7 @@ async function run() {
             Core.setFailed(`${pathToStatusPage} is not a file, stopping.`);
             return;
         }
-        params.fileContents = data.content && Buffer.from(data.content).toString();
+        params.fileContents = data.content && Buffer.from(data.content, 'base64').toString('ascii');
         console.log(`${pathToStatusPage} found.`);
     }
     catch (e) {
