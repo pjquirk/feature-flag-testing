@@ -137,7 +137,8 @@ function updateStatus(params) {
     lines[headerIndex + 1] = `| ${headers.join(" | ")} |`;
     // Find the row for our feature
     const updatedLine = `| ${headers.map(h => getCellContentsForHeader(h, params)).join(" | ")} |`;
-    const featureRowIndex = lines.findIndex(l => l.indexOf(params.featureName));
+    console.log("Updated line: " + updatedLine);
+    const featureRowIndex = lines.findIndex(l => l.indexOf(params.featureName) >= 0);
     if (featureRowIndex >= 0) {
         console.log(`Found ${params.featureName} in table`);
         lines[featureRowIndex] = updatedLine;
@@ -149,7 +150,7 @@ function updateStatus(params) {
     return lines.join('\n');
 }
 function getCellContentsForHeader(header, params) {
-    const stage = params.stages.find(s => s.name === header.toLowerCase());
+    const stage = params.stages.find(s => s.name.toLowerCase() === header.toLowerCase());
     if (!stage) {
         return "";
     }
