@@ -131,7 +131,7 @@ function updateStatus(params) {
     const headersLower = headers.map(h => h.toLowerCase());
     // Just add the new stages to the end
     const missingStageNames = params.stages.map(s => s.name)
-        .filter(name => headersLower.includes(name.toLowerCase()));
+        .filter(name => !headersLower.includes(name.toLowerCase()));
     headers.push(...missingStageNames);
     // Update the headers
     lines[headerIndex + 1] = `| ${headers.join(" | ")} |`;

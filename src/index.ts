@@ -156,7 +156,7 @@ function updateStatus(params: StatusInfoParams): string | undefined {
  
     // Just add the new stages to the end
     const missingStageNames = params.stages.map(s => s.name)
-        .filter(name => headersLower.includes(name.toLowerCase()));
+        .filter(name => !headersLower.includes(name.toLowerCase()));
     headers.push(...missingStageNames);
 
     // Update the headers
