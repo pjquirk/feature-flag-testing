@@ -55,7 +55,6 @@ async function run() {
     }
     console.log(`Found ${stages.length} stages`);
     const pathToStatusPage = Core.getInput('path-to-status-page');
-    let response;
     let params = {
         featureName: featureName,
         fileContents: "",
@@ -67,14 +66,14 @@ async function run() {
     };
     try {
         console.log(`Retrieving contents of: ${pathToStatusPage}`);
-        response = await github.repos.getContents({
+        const getContentsResponse = await github.repos.getContents({
             owner: github_1.context.issue.owner,
             repo: github_1.context.issue.repo,
             path: pathToStatusPage
         });
         params.fileExists = true;
         // Bit of a hack, the type definitions don't expose 'content'
-        const data = response.data;
+        const data = getContentsResponse.data;
         if (!data.content) {
             Core.setFailed(`${pathToStatusPage} is not a file, stopping.`);
             return;
@@ -93,14 +92,24 @@ async function run() {
         params.fileContents = "";
         console.log(`${pathToStatusPage} does not exist, will create it.`);
     }
-    if (params.fileExists) {
-        await updateStatus(params);
-    }
-    else {
+    const newContents = (params.fileExists) ?
+        await updateStatus(params) :
         await createStatus(params);
+    if (!newContents) {
+        console.log("Could not update the status page");
+        return;
     }
+    // Write the markup to the repo
+    console.log(`Writing new status page to ${params.pathToStatusPage}...`);
+    await params.github.repos.createOrUpdateFile({
+        owner: params.issue.owner,
+        repo: params.issue.repo,
+        path: params.pathToStatusPage,
+        message: `Updating feature flag status page for '${params.featureName}'`,
+        content: Buffer.from(newContents).toString('base64')
+    });
 }
-async function updateStatus(params) {
+function updateStatus(params) {
     // Find the header, our table is right below it
     const lines = params.fileContents.split('\n');
     const headerIndex = lines.indexOf(StatusHeader);
@@ -127,15 +136,14 @@ async function updateStatus(params) {
     const updatedLine = `| ${headers.map(h => getCellContentsForHeader(h, params)).join(" | ")} |`;
     const featureRowIndex = lines.findIndex(l => l.indexOf(params.featureName));
     if (featureRowIndex >= 0) {
-        // modify the row
         console.log(`Found ${params.featureName} in table`);
         lines[featureRowIndex] = updatedLine;
     }
     else {
-        // just add a row
         console.log(`Did not find ${params.featureName} in table, adding a row`);
         lines.push(updatedLine);
     }
+    return updatedContents;
 }
 function getCellContentsForHeader(header, params) {
     const stage = params.stages.find(s => s.name === header.toLowerCase());
@@ -149,19 +157,10 @@ async function createStatus(params) {
     // |  | stage 0 | stage 1 | stage 2 |
     // | --- | --- | --- | --- |
     // | feature name | :white_check_mark: |  |  | 
-    const markup = `${StatusHeader}
+    return `${StatusHeader}
 | ${FeatureFlagTitleCell} | ${params.stages.map(s => s.name).join(" | ")} |
 | --- | ${params.stages.map(s => "---").join(" | ")} |
 | ${params.featureName} | ${params.stages.map(getStageStatus).join(" | ")} | `;
-    // Write the markup to the repo
-    const response = await params.github.repos.createOrUpdateFile({
-        owner: params.issue.owner,
-        repo: params.issue.repo,
-        path: params.pathToStatusPage,
-        message: `Updating feature flag status page for '${params.featureName}'`,
-        content: Buffer.from(markup).toString('base64')
-    });
-    console.log("Created status page");
 }
 function getStageStatus(stage) {
     return stage.enabled ? ":white_check_mark:" : " ";
