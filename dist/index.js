@@ -114,9 +114,14 @@ async function updateStatus(params) {
     }
     // Make sure all of our stages exist
     const headerRow = lines[headerIndex + 1];
-    const headers = headerRow.split("|").map(h => h.trim());
-    // TODO: Store indices of each stage name
-    // TODO: insert headers in the right places
+    const headers = headerRow.split("|").map(h => h.trim()).filter(h => h.length > 0);
+    const headersLower = headers.map(h => h.toLowerCase());
+    // Just add the new stages to the end
+    const missingStageNames = params.stages.map(s => s.name)
+        .filter(name => headersLower.includes(name.toLowerCase()));
+    headers.push(...missingStageNames);
+    // Update the headers
+    lines[headerIndex + 1] = "| " + headers.join(" | ") + " |";
     // Find the row for our feature
     const featureRowIndex = lines.findIndex(l => l.indexOf(params.featureName));
     if (featureRowIndex >= 0) {
