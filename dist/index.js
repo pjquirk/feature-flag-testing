@@ -102,17 +102,16 @@ async function run() {
 async function updateStatus(params) {
     // Find the header, our table is right below it
     const lines = params.fileContents.split('\n');
-    console.log(`Found ${lines.length} lines`);
-    console.log(`Line 0: ${lines[0]}`);
-    console.log(`StatusHeader: ${StatusHeader}`);
-    console.log(`Equal?: ${StatusHeader === lines[0]}`);
+    for (const line of lines) {
+        console.log("Line: " + line);
+    }
     const headerIndex = lines.indexOf(StatusHeader);
     if (headerIndex < 0) {
         Core.setFailed("Could not find the table header");
         return;
     }
     // Needs to be at least a header row and divders
-    if (headerIndex <= lines.length - 3) {
+    if (headerIndex > lines.length - 3) {
         Core.setFailed("Not enough lines for a status table");
         return;
     }
